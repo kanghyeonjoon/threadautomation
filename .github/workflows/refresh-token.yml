@@ -1,0 +1,51 @@
+name: Token Refresh
+
+on:
+  schedule:
+    # 매월 1일 00:00 UTC (09:00 KST)
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run token refresh
+        run: |
+          node -e "
+            const { getActiveUsers, updateToken } = require('./src/supabase');
+            const threadsApi = require('./src/threads');
+            const { sendDiscordNotification } = require('./src/discord');
+
+            async function refreshAll() {
+              try {
+                const users = await getActiveUsers();
+                for (const user of users) {
+                  const newData = await threadsApi.refreshToken(user.access_token);
+                  await updateToken(user.threads_user_id, newData.access_token);
+                  console.log('Refreshed token for ' + user.nickname);
+                }
+                await sendDiscordNotification('✅ **[관리]** 모든 유저의 토큰이 성공적으로 갱신되었습니다.');
+              } catch (err) {
+                console.error(err.message);
+                await sendDiscordNotification('🚨 **[관리]** 토큰 갱신 중 에러 발생: ' + err.message);
+              }
+            }
+            refreshAll();
+          "
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

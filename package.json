@@ -1,0 +1,17 @@
+{
+  "name": "threads-automation-v4",
+  "version": "4.0.0",
+  "description": "Multi-user Threads automation with Claude AI and GitHub Actions",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/engine.js",
+    "setup": "node scripts/setup-token.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@anthropic-ai/sdk": "^0.14.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "crypto": "^1.0.1"
+  }
+}

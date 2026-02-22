@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Medic Dashboard | Vibe Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="glass-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>Money Medic <span style="font-size: 10px; opacity: 0.5; vertical-align: middle;">SaaS</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#history">Log History</a></li>
+                    <li><a href="#settings">Persona Settings</a></li>
+                </ul>
+            </nav>
+            <div class="bot-status">
+                <div class="status-indicator online"></div>
+                <span>System Online</span>
+            </div>
+
+            <div class="user-profile"
+                style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <div class="user-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div class="avatar"
+                        style="width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                        U</div>
+                    <div style="overflow: hidden;">
+                        <p id="user-email"
+                            style="font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                            Strategist</p>
+                        <p style="font-size: 10px; color: #666;">Standard Plan</p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn secondary" style="width: 100%; font-size: 12px; padding: 10px;">Sign
+                    Out</button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header>
+                <div class="header-info">
+                    <h2>Welcome, Strategist</h2>
+                    <p>Ready to automate your business structure.</p>
+                </div>
+                <button id="generate-btn" class="glow-button">Generate New Insight</button>
+            </header>
+
+            <section class="dashboard-grid">
+                <!-- Pending Review Card -->
+                <div class="card glass verification-card">
+                    <h3>Pending Review</h3>
+                    <div id="pending-container" class="pending-list">
+                        <div class="empty-state">No posts waiting for review.</div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats-row">
+                    <div class="card glass stat-card">
+                        <span class="stat-label">Total Posts</span>
+                        <span id="total-posts" class="stat-value">0</span>
+                    </div>
+                    <div class="card glass stat-card">
+                        <span class="stat-label">Active Users</span>
+                        <span id="active-users" class="stat-value">1</span>
+                    </div>
+                </div>
+
+                <!-- Recent Logs -->
+                <div class="card glass history-card">
+                    <h3>Recent Activity</h3>
+                    <div id="log-container" class="log-list">
+                        <!-- Logs will appear here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Approval -->
+    <div id="approve-modal" class="modal">
+        <div class="modal-content glass">
+            <h3>Final Review</h3>
+            <textarea id="edit-content" rows="10"></textarea>
+            <div class="modal-actions">
+                <button id="cancel-btn" class="btn secondary">Cancel</button>
+                <button id="final-publish-btn" class="btn primary">Publish Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Onboarding/Settings -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <h3 style="margin-bottom: 20px;">System Configuration</h3>
+
+            <div class="form-section" style="margin-bottom: 25px;">
+                <h4 style="font-size: 14px; color: var(--primary); margin-bottom: 15px;">1. Threads API Connection</h4>
+                <div class="input-group" style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Threads User
+                        ID</label>
+                    <input type="text" id="setting-threads-id" placeholder="Ex: 24336772846020990"
+                        style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                    <p style="font-size: 11px; color: #666; margin-top: 5px;">* <a
+                            href="https://developers.facebook.com/apps/" target="_blank"
+                            style="color: var(--primary); text-decoration: underline;">[Meta for Developers]</a> 앱 설정
+                        페이지 상단에서 확인할 수 있는 고유 번호입니다.</p>
+                </div>
+                <div class="input-group">
+                    <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Access
+                        Token</label>
+                    <input type="password" id="setting-access-token" placeholder="Threads Long-lived Token"
+                        style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                    <p style="font-size: 11px; color: #666; margin-top: 5px;">* <a
+                            href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank"
+                            style="color: var(--primary); text-decoration: underline;">[Token Debugger]</a>에서 발급받은 60일
+                        유효 기간의 장기 토큰을 입력하세요.</p>
+                </div>
+            </div>
+
+            <div class="form-section" style="margin-bottom: 25px;">
+                <h4 style="font-size: 14px; color: var(--primary); margin-bottom: 15px;">2. AI Persona (Write
+                    Philosophy)</h4>
+                <div class="input-group" style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Persona
+                        Name</label>
+                    <input type="text" id="setting-persona-name" placeholder="Ex: 마케팅 자동화 전문가"
+                        style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                </div>
+                <div class="input-group">
+                    <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Detailed Character
+                        Instructions</label>
+                    <textarea id="setting-persona-desc" rows="4" placeholder="예: 무미건조한 조언보다는 날카로운 통찰을 즐기는 전문가 톤으로 작성해줘."
+                        style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="close-settings-btn" class="btn secondary">Close</button>
+                <button id="save-settings-btn" class="btn primary">Save & Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
