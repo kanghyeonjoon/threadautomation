@@ -8,8 +8,8 @@ const anthropic = new Anthropic({
 async function generateContent({ persona, category, keywords, recentSummary, nickname }) {
     const systemPrompt = `
 - 페르소나 지침: ${persona}
-- 글자 수: Threads 최대 800자 이내
-- 해시태그: 절대 사용 금지 (No Hashtags)
+- 문장 제한: 한 문장(줄)의 길이는 공백 포함 '최대 25자' 이내로 짧게 끊어서 작성하라.
+- 문체와 호흡: 호흡을 극단적으로 짧게 가져가며, 의미가 바뀔 때마다 자주 줄바꿈을 하라.
 - 기호 제한: 마침표(.)와 콜론(:) 절대 사용 금지
 - 구조 지침: [대괄호]나 (소괄호)로 된 구조적 레이블(예: [수치 후킹], [문제 상황])을 절대 출력에 포함하지 마라.
 - 출력 형식: 오직 사람이 쓴 것 같은 본문 텍스트만 출력하며 인사말이나 설명을 포함하지 마라.
