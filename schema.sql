@@ -3,7 +3,8 @@
 -- 1. 유저별 인증 정보
 CREATE TABLE IF NOT EXISTS threads_auth (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    threads_user_id TEXT UNIQUE NOT NULL,
+    user_id UUID UNIQUE NOT NULL, -- Supabase Auth User ID
+    threads_user_id TEXT UNIQUE NOT NULL, -- Meta Threads ID
     nickname TEXT NOT NULL,
     access_token TEXT NOT NULL,
     token_expires_at TIMESTAMP WITH TIME ZONE,
@@ -15,26 +16,28 @@ CREATE TABLE IF NOT EXISTS threads_auth (
 -- 2. 콘텐츠 카테고리 (유저별 페르소나 설정)
 CREATE TABLE IF NOT EXISTS content_categories (
     id SERIAL PRIMARY KEY,
+    user_id UUID UNIQUE NOT NULL, -- 1유저 1페르소나 구조 (upsert용)
     threads_user_id TEXT REFERENCES threads_auth(threads_user_id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     persona TEXT NOT NULL,
-    keywords TEXT[], -- 관련 키워드 배열
+    keywords TEXT[],
     is_active BOOLEAN DEFAULT true,
-    UNIQUE(threads_user_id, name)
+    UNIQUE(user_id)
 );
 
 -- 3. 포스팅 이력 (유저별 포스트)
 CREATE TABLE IF NOT EXISTS threads_posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL, -- Supabase Auth User ID
     threads_user_id TEXT REFERENCES threads_auth(threads_user_id) ON DELETE CASCADE,
     category TEXT,
     content TEXT NOT NULL,
     content_hash TEXT,
-    status TEXT DEFAULT 'pending', -- success, fail, retry
+    status TEXT DEFAULT 'pending',
     post_id TEXT,
     error_message TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(threads_user_id, content_hash) -- 유저별 본문 중복 방지
+    UNIQUE(user_id, content_hash)
 );
 
 -- 인덱스

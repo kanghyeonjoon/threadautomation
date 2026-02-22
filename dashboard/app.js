@@ -197,6 +197,7 @@ function renderPending() {
             </div>
             <div class="pending-content" style="line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap;">${post.content}</div>
             <div class="pending-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="window.deletePost('${post.id}')" class="btn" style="background: rgba(255, 68, 68, 0.1); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.2);">삭제</button>
                 <button onclick="window.openEditModal('${post.id}')" class="btn secondary">수정</button>
                 <button onclick="window.approvePost('${post.id}')" class="btn primary">승인 및 게시</button>
             </div>
@@ -239,8 +240,15 @@ window.openEditModal = (id) => {
 };
 
 window.deletePost = async (id) => {
-    if (confirm('정말 삭제하시겠습니까?')) {
-        await db.from('threads_posts').delete().eq('id', id);
+    if (!confirm('정말 삭제하시겠습니까? 승인 전인 게시물만 삭제 가능합니다.')) return;
+
+    updateSystemStatus('Deleting Post...', 'orange');
+    const { error } = await db.from('threads_posts').delete().eq('id', id);
+    if (error) {
+        alert('삭제 실패: ' + error.message);
+        updateSystemStatus('Delete Error', 'red');
+    } else {
+        updateSystemStatus('Post Deleted', '#00ff88');
     }
 };
 
